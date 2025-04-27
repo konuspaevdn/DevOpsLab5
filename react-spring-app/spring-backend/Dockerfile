@@ -1,15 +1,20 @@
-FROM ubuntu:24.04
+FROM maven:3.8-openjdk-11-slim AS build
 
-RUN apt update \
-    && apt install -y openjdk-11-jdk maven mysql-client-core-8.0 \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
+RUN mvn package -DskipTests
 
-COPY pom.xml /build/pom.xml
+FROM eclipse-temurin:21-jre-alpine
 
-WORKDIR /build
+RUN adduser -D spring && \
+    apk add --no-cache bash && \
+    rm -rf /var/cache/apk/*
 
-RUN mvn dependency:resolve 
+WORKDIR /app
+COPY --from=build /app/target/*.jar ./app.jar
+RUN chown spring:spring /app
 
-COPY . /build/
-
-CMD sh -c "./mvnw package -DskipTests && java -jar target/hobbie-backend-0.0.1-SNAPSHOT.jar"
+USER spring
+ENTRYPOINT ["java", "-jar", "app.jar"]

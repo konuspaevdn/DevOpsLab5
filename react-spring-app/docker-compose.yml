@@ -45,7 +45,7 @@ services:
   nginx-proxy:
     build: ./nginx
     ports:
-      - "${NGINX_PORT}:${NGINX_PORT}"
+      - 3000:3000
     env_file:
       - .env.nginx
     volumes:
