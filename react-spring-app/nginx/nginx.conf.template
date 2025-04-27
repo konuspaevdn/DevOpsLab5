@@ -4,15 +4,15 @@ events {
 
 http {
     upstream backend {
-        server backend:8080;
+        server ${BACKEND_SERVICE};
     }
 
     upstream frontend {
-        server frontend:3000;
+        server ${FRONTEND_SERVICE};
     }
 
     server {
-        listen 3000;
+        listen ${NGINX_PORT};
 
         location / {
             proxy_pass http://frontend;
